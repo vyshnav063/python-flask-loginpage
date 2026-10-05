@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<h1>Log in</h1>
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Email
+    <input type="email" name="email" value="{{ email }}" autocomplete="email" required>
+  </label>
+  <label>Password
+    <input type="password" name="password" autocomplete="current-password" required>
+  </label>
+  <label class="check"><input type="checkbox" name="remember"> Keep me logged in</label>
+  <button type="submit">Log in</button>
+</form>
+{% if unverified %}
+<p class="alt"><a href="{{ url_for('resend') }}">Send a new verification email</a></p>
+{% endif %}
+<p class="alt">New here? <a href="{{ url_for('register') }}">Create an account</a></p>
+{% endblock %}

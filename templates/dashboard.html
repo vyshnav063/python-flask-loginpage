@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Welcome, {{ current_user.full_name }}</h1>
+<dl>
+  <dt>Email</dt><dd>{{ current_user.email }}</dd>
+  <dt>Phone</dt><dd>{{ current_user.phone or 'Not provided' }}</dd>
+  <dt>Member since</dt><dd>{{ current_user.created_at.strftime('%d %b %Y') }}</dd>
+</dl>
+<form method="post" action="{{ url_for('logout') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="secondary">Log out</button>
+</form>
+{% endblock %}

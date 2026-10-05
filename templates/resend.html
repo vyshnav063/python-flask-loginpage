@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Resend verification{% endblock %}
+{% block content %}
+<h1>Send a new verification link</h1>
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Email
+    <input type="email" name="email" autocomplete="email" required>
+  </label>
+  <button type="submit">Send link</button>
+</form>
+<p class="alt"><a href="{{ url_for('login') }}">Back to log in</a></p>
+{% endblock %}
