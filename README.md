@@ -76,7 +76,7 @@ Windows:
 pip install -r requirements.txt
 ```
 
-###-----------------Usage-----------------###
+### ▶️ Usage
 
 - Run the Flask application type the terminal: python app.py
   
@@ -88,6 +88,7 @@ Then you can:
 -🔑 Log in with your credentials
 -👤 Access the dashboard
 -🚪 Log out
+
 
 
 ### 🔐 Security Features
