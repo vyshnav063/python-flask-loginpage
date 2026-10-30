@@ -1,7 +1,7 @@
 :root {
-  --bg: #15201d; --card: #000000; --ink: #b6fffe; --muted: #d6f5ff;
-  --line: #eadccc; --accent: #0f6b5c; --accent-dark: #0a4d42;
-  --err-bg: #fbeaea; --err: #a12a2a; --ok-bg: #e0fff5; --ok: #0a5a45;
+  --bg: #405451; --card: #8bacb1; --ink: #152121; --muted: #d9f6ff;
+  --line: #f5e8da; --accent: #0c8e78; --accent-dark: #0a4d42;
+  --err-bg: #fce3e3; --err: #a12a2a; --ok-bg: #00cf8d; --ok: #0a5a45;
 }
 * { box-sizing: border-box; }
 body {
@@ -26,7 +26,7 @@ small { display: block; margin-top: 0.25rem; font-weight: 400; color: var(--mute
 .check { font-weight: 400; display: flex; gap: 0.5rem; align-items: center; }
 button {
   width: 100%; padding: 0.75rem; border: 0; border-radius: 6px; cursor: pointer;
-  background: var(--accent); color: #fff; font: inherit; font-weight: 600;
+  background: var(--accent); color: #ffffff; font: inherit; font-weight: 600;
 }
 button:hover { background: var(--accent-dark); }
 button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }

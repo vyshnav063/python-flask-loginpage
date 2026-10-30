@@ -2,6 +2,8 @@ import os
 import re
 import secrets
 import smtplib
+from dotenv import load_dotenv
+load_dotenv()
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 
@@ -14,14 +16,26 @@ from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
+
+
+app_env = os.environ.get("APP_ENV", "development")
+secret_key = os.environ.get("SECRET_KEY")
+
+if not secret_key:
+    if app_env == "production":
+        raise RuntimeError("SECRET_KEY must be configured in production")
+    secret_key = secrets.token_hex(32)
+
 app.config.update(
-    SECRET_KEY=os.environ.get("SECRET_KEY") or secrets.token_hex(32),  # set in production!
+
+    SECRET_KEY=secret_key,
     SQLALCHEMY_DATABASE_URI="sqlite:///users.db",
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=os.environ.get("FLASK_ENV") == "production",  # HTTPS only in prod
+    SESSION_COOKIE_SECURE=app_env == "production",
     REMEMBER_COOKIE_HTTPONLY=True,
 )
+
 
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)  # CSRF token required on every POST form
@@ -69,23 +83,60 @@ def password_problems(pw):
 
 def send_verification_email(user):
     token = serializer.dumps(user.email)
-    link = url_for("verify_email", token=token, _external=True)
+
+    link = url_for(
+        "verify_email",
+        token=token,
+        _external=True
+    )
+
     server = os.environ.get("MAIL_SERVER")
-    if not server:  # dev mode: no SMTP configured
-        print(f"\n[DEV] Verification link for {user.email}:\n{link}\n")
+
+    # Development mode: print the verification link
+    if not server:
+        print(
+            f"\n[DEV] Verification link for {user.email}:\n"
+            f"{link}\n",
+            flush=True
+        )
         return
+
+    sender = (
+        os.environ.get("MAIL_SENDER")
+        or os.environ.get("MAIL_USERNAME")
+    )
+
+    username = os.environ.get("MAIL_USERNAME")
+    password = os.environ.get("MAIL_PASSWORD")
+    port = int(os.environ.get("MAIL_PORT", "587"))
+
+    if not sender or not username or not password:
+        raise RuntimeError(
+            "SMTP configuration is incomplete. "
+            "Check MAIL_SENDER, MAIL_USERNAME, and MAIL_PASSWORD."
+        )
+
     msg = EmailMessage()
     msg["Subject"] = "Verify your email address"
-    msg["From"] = os.environ.get("MAIL_SENDER", os.environ.get("MAIL_USERNAME"))
+    msg["From"] = sender
     msg["To"] = user.email
+
     msg.set_content(
-        f"Hi {user.full_name},\n\nConfirm your email to activate your account:\n{link}\n\n"
-        "This link expires in 24 hours. If you didn't sign up, ignore this email."
+        f"Hi {user.full_name},\n\n"
+        "Confirm your email to activate your account:\n"
+        f"{link}\n\n"
+        "This link expires in 24 hours. "
+        "If you didn't sign up, ignore this email."
     )
-    with smtplib.SMTP(server, int(os.environ.get("MAIL_PORT", 587))) as smtp:
+
+    with smtplib.SMTP(server, port, timeout=20) as smtp:
+        smtp.ehlo()
         smtp.starttls()
-        smtp.login(os.environ["MAIL_USERNAME"], os.environ["MAIL_PASSWORD"])
+        smtp.ehlo()
+        smtp.login(username, password)
         smtp.send_message(msg)
+
+    print(f"Verification email accepted for delivery to {user.email}.")
 
 
 # ---------- routes ----------
@@ -221,4 +272,4 @@ with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
